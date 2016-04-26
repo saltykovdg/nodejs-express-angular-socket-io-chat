@@ -7,7 +7,7 @@ npm start
 open http://localhost:3000
 ```
 
-[Demo](https://nodejs-express-angular-socket.com/)
+[Demo](https://nodejs-express-angular-socket.herokuapp.com/)
 
 License
 =======
