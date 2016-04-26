@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    div(ng-controller='MessageListController as messageList').container-fluid
+        h1.page-header My first chat on Angular 1.5 and Socket.IO
+        div.form-group
+            input(ng-model='messageList.author' placeholder='Введите ваше имя').form-control
+        div.form-group
+            textarea(ng-model='messageList.text' placeholder='Введите сообщение' rows='3').form-control
+        form(ng-submit='messageList.sendMessage()').form-group.pull-right
+            button(type='submit').btn.btn-default Отправить сообщение
+        div(ng-repeat='message in messageList.messages')
+            p [{{message.date}}] - {{message.author}}: {{message.text}}

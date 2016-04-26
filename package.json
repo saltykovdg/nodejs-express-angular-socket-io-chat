@@ -1,0 +1,19 @@
+{
+  "name": "nodejs-angular-express-material",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.4",
+    "method-override": "^2.3.5",
+    "body-parser": "^1.15.0",
+    "path": "^0.12.7",
+    "jade": "^1.11.0",
+    "socket.io": "^1.4.5"
+  },
+  "main": "./app.js",
+  "scripts": {
+    "start": "node bin/www",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+var app = require('../app');
+
+app.set('port', process.env.PORT || 3000);
+
+var server = app.listen(app.get('port'), function () {
+    console.log('Express server listening on port ' + server.address().port);
+});
+
+var clients = [];
+var messagesBuffer = [];
+var io = require('socket.io')(server);
+
+io.on('connection', function (socket) {
+    clients.push(socket);
+
+    socket.on('disconnect', function () {
+        var index = clients.indexOf(socket);
+        if (index != -1) {
+            clients.splice(index, 1);
+            console.info('user disconnected [id = ' + socket.id + '].');
+        }
+    });
+    socket.on('chat message', function (msg) {
+        msg.date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+        messagesBuffer.push(msg);
+        console.log('message: ' + JSON.stringify(msg));
+        io.emit('chat message', msg);
+        if (messagesBuffer.length > 100) {
+            messagesBuffer.shift();
+        }
+    });
+
+    messagesBuffer.forEach(function (item) {
+        io.sockets.connected[socket.id].emit('chat message', item);
+    });
+
+    console.info('user connected [id = ' + socket.id + '].');
+});
