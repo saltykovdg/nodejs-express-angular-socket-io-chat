@@ -1,23 +1,32 @@
-var app = angular.module('myApp', []);
+'use strict';
 
-app.controller('MessageListController', function ($scope) {
-    var messageList = this;
-    messageList.messages = [];
+var chatApp = angular.module('chatApp', ['ngRoute', 'ngCookies']);
 
-    messageList.sendMessage = function () {
-        if (messageList.author && messageList.text) {
-            var data = {
-                author: messageList.author,
-                text: messageList.text
-            };
-            socket.emit('chat message', data);
-            messageList.text = '';
-        }
+chatApp.directive('myEnter', function () {
+    return function (scope, element, attrs) {
+        element.bind("keydown keypress", function (event) {
+            if (event.which === 13 && event.ctrlKey === true) {
+                scope.$apply(function () {
+                    scope.$eval(attrs.myEnter);
+                });
+                event.preventDefault();
+            }
+        });
     };
-
-    var socket = io();
-    socket.on('chat message', function (data) {
-        messageList.messages.unshift(data);
-        $scope.$apply();
-    });
 });
+
+chatApp.config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
+    $routeProvider.
+        when('/', {
+            templateUrl: '/view/chat',
+            controller: ChatController
+        }).
+        when('/login', {
+            templateUrl: '/view/login',
+            controller: LoginController
+        }).
+        otherwise({
+            redirectTo: '/'
+        });
+    $locationProvider.html5Mode(true);
+}]);

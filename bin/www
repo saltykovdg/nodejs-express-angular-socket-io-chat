@@ -1,39 +1,60 @@
 #!/usr/bin/env node
-var app = require('../app');
+var app = require('../app'),
+    cookie = require('cookie');
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 3001);
 
 var server = app.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + server.address().port);
 });
 
-var clients = [];
+var clients = {};
 var messagesBuffer = [];
 var io = require('socket.io')(server);
 
 io.on('connection', function (socket) {
-    clients.push(socket);
+    var username = socket.id;
+    var cookies;
+    if (socket.conn.request.headers.cookie) {
+        cookies = cookie.parse(socket.conn.request.headers.cookie);
+        if (cookies.username) {
+            username = cookies.username;
+        }
+    }
+
+    clients[socket.id] = username;
 
     socket.on('disconnect', function () {
-        var index = clients.indexOf(socket);
-        if (index != -1) {
-            clients.splice(index, 1);
-            console.info('user disconnected [id = ' + socket.id + '].');
-        }
+        var message = {date: getCurrentDate(), author: clients[socket.id], text: 'disconnected.'};
+        addToStore(message);
+        io.sockets.emit('chat message', message);
+        delete clients[socket.id];
+        io.sockets.emit('clients', clients);
     });
     socket.on('chat message', function (msg) {
-        msg.date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
-        messagesBuffer.push(msg);
-        console.log('message: ' + JSON.stringify(msg));
+        msg.date = getCurrentDate();
+        addToStore(msg);
         io.emit('chat message', msg);
-        if (messagesBuffer.length > 100) {
-            messagesBuffer.shift();
-        }
     });
 
     messagesBuffer.forEach(function (item) {
         io.sockets.connected[socket.id].emit('chat message', item);
     });
 
-    console.info('user connected [id = ' + socket.id + '].');
+    var message = {date: getCurrentDate(), author: clients[socket.id], text: 'connected.'};
+    addToStore(message);
+    io.sockets.emit('chat message', message);
+    io.sockets.emit('clients', clients);
 });
+
+function getCurrentDate() {
+    return new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+}
+
+function addToStore(message) {
+    console.log('message: ' + JSON.stringify(message));
+    messagesBuffer.push(message);
+    if (messagesBuffer.length > 100) {
+        messagesBuffer.shift();
+    }
+}

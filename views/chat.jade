@@ -1,0 +1,12 @@
+div Пользователи онлайн:
+    ul.list-inline
+        li(ng-repeat='client in clients')
+            span.label.label-primary {{client}}
+.form-group
+    h3
+        span.label.label-info {{username}}
+    textarea.form-control(ng-model='text', placeholder='Введите сообщение', rows='3', my-enter='sendMessage()')
+form.form-group.pull-right(ng-submit='sendMessage()')
+    button.btn.btn-default(type='submit') Отправить сообщение
+div(ng-repeat='message in messages')
+    p [{{message.date}}] - {{message.author}}: {{message.text}}

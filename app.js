@@ -2,7 +2,7 @@ var express = require('express'),
     path = require('path'),
     methodOverride = require('method-override'),
     bodyParser = require('body-parser'),
-    index = require('./routes/index');
+    routes = require('./routes');
 
 var app = express();
 
@@ -20,10 +20,12 @@ app.set('view options', {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.get('/', index.index);
+app.get('/', routes.index);
+app.get('/view/login', routes.login);
+app.get('/view/chat', routes.chat);
 
 // redirect all others to the index (HTML5 history)
-app.get('*', index.index);
+app.get('*', routes.index);
 
 /// catch 404 and forward to error handler
 app.use(function (req, res, next) {
