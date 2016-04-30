@@ -12,7 +12,7 @@ div Пользователи онлайн:
         span.label.label-info {{chat_username}}
     textarea.form-control(ng-model='text', placeholder='Введите сообщение', rows='3', my-enter='sendMessageUser()')
 form.form-group.pull-right(ng-submit='sendMessageUser()')
-    button(ng-if='receiver_username').btn.btn-default(type='submit') Отправить сообщение пользователю [{{receiver_username}}]
-    button(ng-if='!receiver_username' disabled='disabled').btn.btn-default(type='submit') Пользователь offline
+    button(ng-if='receiver_username' type='submit').btn.btn-default Отправить сообщение пользователю [{{receiver_username}}]
+    button(ng-if='!receiver_username' type='submit' disabled='disabled').btn.btn-default Пользователь offline
 div(ng-repeat='message in userMessages[receiver_id]')
     p [{{message.date}}] - {{message.author}}: {{message.text}}

@@ -9,6 +9,7 @@ var server = app.listen(app.get('port'), function () {
 });
 
 var clients = {};
+var clientsAll = {};
 var messagesBuffer = [];
 var messagesUserBuffer = [];
 var io = require('socket.io')(server);
@@ -28,12 +29,25 @@ io.on('connection', function (socket) {
     }
 
     if (chat_user_id && chat_username) {
-        clients[socket.id] = {};
-        clients[socket.id].id = chat_user_id;
-        clients[socket.id].username = chat_username;
+        var isUserExists = false;
+        for (var key in clients) {
+            if (clients[key].id == chat_user_id) {
+                isUserExists = true;
+            }
+        }
+
+        if (!isUserExists) {
+            clients[socket.id] = {};
+            clients[socket.id].id = chat_user_id;
+            clients[socket.id].username = chat_username;
+        }
+
+        clientsAll[socket.id] = {};
+        clientsAll[socket.id].id = chat_user_id;
+        clientsAll[socket.id].username = chat_username;
 
         socket.on('disconnect', function () {
-            var message = {author: clients[socket.id].username, text: 'disconnected.'};
+            var message = {author: chat_username, text: 'disconnected.'};
             addToStore(message);
             io.sockets.emit('chat message', message);
             delete clients[socket.id];
@@ -45,8 +59,8 @@ io.on('connection', function (socket) {
         });
         socket.on('chat message user', function (msg) {
             addToStoreUser(msg);
-            for (var item in clients) {
-                if (msg.receiver_id == clients[item].id || msg.sender_id == clients[item].id) {
+            for (var item in clientsAll) {
+                if (msg.receiver_id == clientsAll[item].id || msg.sender_id == clientsAll[item].id) {
                     if (io.sockets.connected[item]) {
                         io.sockets.connected[item].emit('chat message user', msg);
                     }
@@ -64,7 +78,7 @@ io.on('connection', function (socket) {
                 io.sockets.connected[socket.id].emit('chat message user', item);
             }
         });
-        var message = {author: clients[socket.id].username, text: 'connected.'};
+        var message = {author: chat_username, text: 'connected.'};
         addToStore(message);
         io.sockets.emit('chat message', message);
         io.sockets.emit('clients', clients);
