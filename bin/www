@@ -33,6 +33,7 @@ io.on('connection', function (socket) {
         for (var key in clients) {
             if (clients[key].id == chat_user_id) {
                 isUserExists = true;
+                break;
             }
         }
 
@@ -57,6 +58,7 @@ io.on('connection', function (socket) {
                     clients[key] = {};
                     clients[key].id = chat_user_id;
                     clients[key].username = chat_username;
+                    break;
                 }
             }
             io.sockets.emit('clients', clients);
