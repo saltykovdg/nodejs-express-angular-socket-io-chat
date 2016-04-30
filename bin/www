@@ -51,6 +51,14 @@ io.on('connection', function (socket) {
             addToStore(message);
             io.sockets.emit('chat message', message);
             delete clients[socket.id];
+            delete clientsAll[socket.id];
+            for (var key in clientsAll) {
+                if (clientsAll[key].id == chat_user_id) {
+                    clients[key] = {};
+                    clients[key].id = chat_user_id;
+                    clients[key].username = chat_username;
+                }
+            }
             io.sockets.emit('clients', clients);
         });
         socket.on('chat message', function (msg) {
