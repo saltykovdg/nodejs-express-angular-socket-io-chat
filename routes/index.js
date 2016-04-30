@@ -9,3 +9,7 @@ exports.login = function (req, res, next) {
 exports.chat = function (req, res, next) {
     res.render('chat');
 };
+
+exports.chatUser = function (req, res, next) {
+    res.render('chat-user');
+};

@@ -10,41 +10,65 @@ var server = app.listen(app.get('port'), function () {
 
 var clients = {};
 var messagesBuffer = [];
+var messagesUserBuffer = [];
 var io = require('socket.io')(server);
 
 io.on('connection', function (socket) {
-    var username = socket.id;
+    var chat_user_id = null;
+    var chat_username = null;
     var cookies;
     if (socket.conn.request.headers.cookie) {
         cookies = cookie.parse(socket.conn.request.headers.cookie);
-        if (cookies.username) {
-            username = cookies.username;
+        if (cookies.chat_user_id) {
+            chat_user_id = cookies.chat_user_id;
+        }
+        if (cookies.chat_username) {
+            chat_username = cookies.chat_username;
         }
     }
 
-    clients[socket.id] = username;
+    if (chat_user_id && chat_username) {
+        clients[socket.id] = {};
+        clients[socket.id].id = chat_user_id;
+        clients[socket.id].username = chat_username;
 
-    socket.on('disconnect', function () {
-        var message = {date: getCurrentDate(), author: clients[socket.id], text: 'disconnected.'};
+        socket.on('disconnect', function () {
+            var message = {author: clients[socket.id].username, text: 'disconnected.'};
+            addToStore(message);
+            io.sockets.emit('chat message', message);
+            delete clients[socket.id];
+            io.sockets.emit('clients', clients);
+        });
+        socket.on('chat message', function (msg) {
+            addToStore(msg);
+            io.emit('chat message', msg);
+        });
+        socket.on('chat message user', function (msg) {
+            addToStoreUser(msg);
+            for (var item in clients) {
+                if (msg.receiver_id == clients[item].id || msg.sender_id == clients[item].id) {
+                    if (io.sockets.connected[item]) {
+                        io.sockets.connected[item].emit('chat message user', msg);
+                    }
+                }
+            }
+        });
+
+        messagesBuffer.forEach(function (item) {
+            item.is_archive = true;
+            io.sockets.connected[socket.id].emit('chat message', item);
+        });
+        messagesUserBuffer.forEach(function (item) {
+            if (chat_user_id == item.sender_id || chat_user_id == item.receiver_id) {
+                item.is_archive = true;
+                io.sockets.connected[socket.id].emit('chat message user', item);
+            }
+        });
+        var message = {author: clients[socket.id].username, text: 'connected.'};
         addToStore(message);
         io.sockets.emit('chat message', message);
-        delete clients[socket.id];
         io.sockets.emit('clients', clients);
-    });
-    socket.on('chat message', function (msg) {
-        msg.date = getCurrentDate();
-        addToStore(msg);
-        io.emit('chat message', msg);
-    });
-
-    messagesBuffer.forEach(function (item) {
-        io.sockets.connected[socket.id].emit('chat message', item);
-    });
-
-    var message = {date: getCurrentDate(), author: clients[socket.id], text: 'connected.'};
-    addToStore(message);
-    io.sockets.emit('chat message', message);
-    io.sockets.emit('clients', clients);
+    }
 });
 
 function getCurrentDate() {
@@ -52,9 +76,21 @@ function getCurrentDate() {
 }
 
 function addToStore(message) {
+    message.date = getCurrentDate();
+    message.is_archive = false;
     console.log('message: ' + JSON.stringify(message));
     messagesBuffer.push(message);
     if (messagesBuffer.length > 100) {
         messagesBuffer.shift();
+    }
+}
+
+function addToStoreUser(message) {
+    message.date = getCurrentDate();
+    message.is_archive = false;
+    console.log('message for user: ' + JSON.stringify(message));
+    messagesUserBuffer.push(message);
+    if (messagesUserBuffer.length > 100) {
+        messagesUserBuffer.shift();
     }
 }

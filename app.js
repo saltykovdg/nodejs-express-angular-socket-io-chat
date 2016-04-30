@@ -23,6 +23,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', routes.index);
 app.get('/view/login', routes.login);
 app.get('/view/chat', routes.chat);
+app.get('/view/chat-user', routes.chatUser);
 
 // redirect all others to the index (HTML5 history)
 app.get('*', routes.index);

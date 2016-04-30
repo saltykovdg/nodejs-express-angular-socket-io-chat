@@ -21,6 +21,10 @@ chatApp.config(['$routeProvider', '$locationProvider', function ($routeProvider,
             templateUrl: '/view/chat',
             controller: ChatController
         }).
+        when('/chat/:userId', {
+            templateUrl: '/view/chat-user',
+            controller: UserChatController
+        }).
         when('/login', {
             templateUrl: '/view/login',
             controller: LoginController

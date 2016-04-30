@@ -1,10 +1,12 @@
 div Пользователи онлайн:
     ul.list-inline
-        li(ng-repeat='client in clients')
-            span.label.label-primary {{client}}
+        li(ng-repeat='(key, value) in clients')
+            a(ng-if='value.id !== chat_user_id' href='/chat/{{value.id}}')
+                span(id='{{value.id}}').label.label-primary {{value.username}} {{userNewMessagesCount[value.id] ? "(" + userNewMessagesCount[value.id] + ")" : ""}}
+            span(ng-if='value.id === chat_user_id').label.label-info {{value.username}}
 .form-group
     h3
-        span.label.label-info {{username}}
+        span.label.label-info {{chat_username}}
     textarea.form-control(ng-model='text', placeholder='Введите сообщение', rows='3', my-enter='sendMessage()')
 form.form-group.pull-right(ng-submit='sendMessage()')
     button.btn.btn-default(type='submit') Отправить сообщение

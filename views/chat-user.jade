@@ -1,0 +1,18 @@
+div Пользователи онлайн:
+    ul.list-inline
+        li
+            a(href='/')
+                span.label.label-primary Перейти в общий чат
+        li(ng-repeat='(key, value) in clients')
+            a(ng-if='value.id !== chat_user_id && value.id !== receiver_id' href='/chat/{{value.id}}')
+                span(id='{{value.id}}').label.label-primary {{value.username}} {{userNewMessagesCount[value.id] ? "(" + userNewMessagesCount[value.id] + ")" : ""}}
+            span(ng-if='value.id === chat_user_id || value.id === receiver_id').label.label-info {{value.username}}
+.form-group
+    h3.form-inline
+        span.label.label-info {{chat_username}}
+    textarea.form-control(ng-model='text', placeholder='Введите сообщение', rows='3', my-enter='sendMessageUser()')
+form.form-group.pull-right(ng-submit='sendMessageUser()')
+    button(ng-if='receiver_username').btn.btn-default(type='submit') Отправить сообщение пользователю [{{receiver_username}}]
+    button(ng-if='!receiver_username' disabled='disabled').btn.btn-default(type='submit') Пользователь offline
+div(ng-repeat='message in userMessages[receiver_id]')
+    p [{{message.date}}] - {{message.author}}: {{message.text}}
